@@ -1,1 +1,0 @@
-# solarpathplus.github.io
