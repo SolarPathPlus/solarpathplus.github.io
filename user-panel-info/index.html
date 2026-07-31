@@ -4,8 +4,376 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SP+ | User Panel</title>
+    <link rel="icon" type="image/png" href="../assets/sp-logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050000;
+            --accent-color: #00ff80;
+            --hover-color: #62ff4d;
+            --text-color: #ececec;
+            --card-bg: rgba(0, 255, 128, 0.034);
+            --grid-color: rgba(255, 0, 0, 0.05);
+            --terminal-bg: #000c0b;
+            --terminal-header: #001a19;
+            --section-title: #ffffff;
+            --red-glow: rgba(0, 255, 157, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            cursor: none !important; 
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: var(--text-color);
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .cursor-dot {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10000;
+            box-shadow: 0 0 15px var(--accent-color);
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s;
+        }
+
+        .cursor-trail {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+
+        .cursor-active {
+            background-color: #fff !important;
+            transform: translate(-50%, -50%) scale(2.5);
+            box-shadow: 0 0 25px var(--accent-color);
+        }
+
+        header {
+            padding: 1.2rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 255, 106, 0.1);
+            background: rgba(5, 0, 0, 0.85);
+            -webkit-backdrop-filter: blur(15px);
+            backdrop-filter: blur(15px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .main-logo {
+            height: 35px;
+            filter: drop-shadow(0 0 8px var(--accent-color));
+        }
+
+        .brand-name {
+            font-weight: 700;
+            font-size: 1.3rem;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        .dev-link {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .hero {
+            padding: 100px 20px 60px 20px;
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .hero-logo {
+            height: 120px;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(0, 255, 170, 0.5);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #a38a8a;
+            margin-bottom: 3rem;
+        }
+
+        .terminal-box {
+            background: var(--terminal-bg);
+            border: 1px solid rgba(0, 255, 149, 0.3);
+            border-radius: 10px;
+            margin: 40px auto;
+            max-width: 800px;
+            text-align: left;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: var(--terminal-header);
+            padding: 12px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-status {
+            color: #666;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; }
+
+        .terminal-content {
+            padding: 25px;
+            color: #d1d1d1;
+            font-size: 0.95rem;
+        }
+
+        .ps-prompt { color: var(--accent-color); }
+        .ps-cmd { color: #fff; }
+        .ps-output { color: #888; }
+
+        .section-divider {
+            text-align: center;
+            margin: 80px 0 40px 0;
+        }
+
+        .section-divider h2 {
+            font-size: 2.2rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .lang-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 255, 179, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            transition: all 0.4s ease;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+
+        .lang-card:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-10px);
+            background: rgba(0, 255, 234, 0.05);
+            box-shadow: 0 10px 40px rgba(0, 255, 200, 0.2);
+        }
+
+        .lang-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        .contact-section {
+            text-align: center;
+            padding: 80px 20px;
+            border-top: 1px solid var(--grid-color);
+        }
+
+        .contact-logo {
+            height: 100px;
+            margin-bottom: 30px;
+            filter: drop-shadow(0 0 10px var(--accent-color));
+        }
+
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 5px;
+            transition: 0.3s;
+        }
+
+        .links a:hover {
+            color: var(--accent-color);
+            letter-spacing: 2px;
+        }
+
+        .symbol {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #4c6366;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            * { cursor: auto !important; }
+            .cursor-dot, .cursor-trail { display: none; }
+        }
+    </style>
 </head>
 <body>
-    
+
+    <div class="cursor-dot"></div>
+
+    <header>
+        <div class="brand">
+            <img src="../assets/sp-logo.png" alt="SP+" class="main-logo">
+            <span class="brand-name">SolarPath+ Project</span>
+        </div>
+        <div>
+            <a href="../index.html" class="dev-link" rel="noopener">&lt-</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <img src="../assets/sp-logo.png" alt="SP+" class="hero-logo">
+        <h1>SolarPath+ Admin Panel</h1>
+        <p>A panel designed for sysadmins to manage their own SP+.</p>
+        
+        <div class="terminal-box">
+            <div class="terminal-header">
+                <div class="dot red"></div>
+                <div class="dot yellow"></div>
+                <div class="dot green"></div>
+                <span class="terminal-status">spp-admin-installer.sh</span>
+            </div>
+            <div class="terminal-content">
+                <pre>
+<span class="ps-prompt">root@solarpathplus:~#</span> <span class="ps-cmd">spp-admin-installer.sh</span>
+<span class="ps-output">[*] System Installation [SUCCESS]</span>
+<span class="ps-output">[*] Security Filter: SHA-256 Hash Verification [PASSED]</span>
+<span class="ps-output">[*] User Layer: Monitoring Subsystems...</span>
+<span class="ps-prompt">root@solarpathplus:~#</span> <span class="ps-cmd">_</span></pre>
+            </div>
+        </div>
+    </section>
+
+    <div class="section-divider">
+        <h2>The Manifesto</h2>
+    </div>
+
+    <div class="matrix-grid">
+        <div class="lang-card">
+            <h3>TUI Interface</h3>
+            <p>TIG has developed the most lightweight and the most user-friendly interface for you.</p>
+        </div>
+        <div class="lang-card">
+            <h3>Developability</h3>
+            <p>People can develop their own clients. TIG releases the source code on GitHub. Also, TIG had released a header file so users can include and develop a UI.</p>
+        </div>
+        <div class="lang-card">
+            <h3>User Tracking</h3>
+            <p>You can manage the users of your own property. Add, share, chat or just edit their priveleges.</p>
+        </div>
+    </div>
+
+    <div class="contact-section">
+        <img src="../assets/tig-logo.png" alt="TIG" class="contact-logo">
+        <div class="links">
+            <a href="https://github.com/SolarPathPlus/admin-panel/blob/main/docs/INSTALLATION.md" target="_blank" rel="noopener">Installation</a>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 SolarPath+ Project - Built by Team: InterGalactic.<br>
+        We respect the nature.
+    </footer>
+
+    <script>
+        const dot = document.querySelector('.cursor-dot');
+        const trails = [];
+        for (let i = 0; i < 8; i++) {
+            const t = document.createElement('div');
+            t.className = 'cursor-trail';
+            document.body.appendChild(t);
+            trails.push({ el: t, x: 0, y: 0 });
+        }
+
+        let mouseX = 0, mouseY = 0;
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            dot.style.left = mouseX + 'px';
+            dot.style.top = mouseY + 'px';
+        });
+
+        function animate() {
+            let x = mouseX;
+            let y = mouseY;
+            trails.forEach((t, index) => {
+                t.x += (x - t.x) * 0.2;
+                t.y += (y - t.y) * 0.2;
+                t.el.style.left = t.x + 'px';
+                t.el.style.top = t.y + 'px';
+                t.el.style.opacity = (1 - (index / 8)) * 0.5;
+                x = t.x; y = t.y;
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        const interactives = document.querySelectorAll('a, .lang-card, .terminal-box');
+        interactives.forEach(el => {
+            el.addEventListener('mouseenter', () => dot.classList.add('cursor-active'));
+            el.addEventListener('mouseleave', () => dot.classList.remove('cursor-active'));
+        });
+    </script>
 </body>
 </html>
